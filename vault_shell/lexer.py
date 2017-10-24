@@ -20,4 +20,5 @@ class VaultLexer(RegexLexer):
              r'|role|impersonate|expiration|trustor-domain|trustee-domain)',
              Operator)],
     }
+
     

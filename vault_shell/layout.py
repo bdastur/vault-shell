@@ -40,7 +40,7 @@ class VaultBuffer(object):
         self.helper_buffer = Buffer(is_multiline=True)
         self.helper_buffer.text = "Vault Help"
 
-        vault_completer.help_buffer = self.helper_buffer
+        #vault_completer.help_buffer = self.helper_buffer
 
         self.buffers = {
             DEFAULT_BUFFER: self.main_buffer,
