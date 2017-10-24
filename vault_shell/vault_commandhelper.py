@@ -31,11 +31,23 @@ class VaultCommandHelper(object):
 
         return output
 
+    def get_vault_help_options(self, vault_cmdlist):
+        if not vault_cmdlist:
+            vault_cmdlist = ['vault -h']
+            return self.execute_vault_commands(vault_cmdlist)
+
+        vault_cmdlist.insert(0, "vault")
+        vault_cmdlist.append("-h")
+        return self.execute_vault_commands(vault_cmdlist)
+
     def get_commandkey_from_cmdlist(self, cmdlist):
         '''
         Return a string that can be used as a key to index the cached
         commands and arguments
         '''
+        if not cmdlist:
+            return "vault"
+
         cmdkey = "vault"
         for cmd in cmdlist:
             cmdkey += "_" + cmd
@@ -66,9 +78,10 @@ class VaultCommandHelper(object):
                 cmd_type = 'subcmds'
                 continue
 
-            if re.match(r'.*General Options:', line, re.IGNORECASE):
+            if re.match(r'.*Options:', line, re.IGNORECASE):
                 parse_stage = 3
                 cmd_type = "options"
+                self.cmd_dict[cmdkey]['options'] = {}
                 continue
 
             if re.match(r'usage:.*', line, re.IGNORECASE):
@@ -83,19 +96,28 @@ class VaultCommandHelper(object):
             if line.startswith("           "):
                 mobj = re.match(r'\s+(\S+.*)', line)
                 if mobj:
-                    self.cmd_dict[cmdkey][cur_option]['helpstr'] += \
+                    if cmd_type == "options":
+                        self.cmd_dict[cmdkey]['options'][cur_option]['helpstr'] += \
+                            mobj.group(1) + "\n"
+                    else:
+                        self.cmd_dict[cmdkey][cur_option]['helpstr'] += \
                         mobj.group(1) + "\n"
+
                     continue
 
             mobj = re.match(r'\s+(\S+)\s*(\w+.*)', line)
             if mobj:
                 #print "matched: ", mobj.group(1), mobj.group(2)
                 cur_option = mobj.group(1)
-                self.cmd_dict[cmdkey][cur_option] = {}
-                self.cmd_dict[cmdkey][cur_option]['helpstr'] = \
-                    mobj.group(2) + "\n"
+                if cmd_type == "options":
+                    self.cmd_dict[cmdkey]['options'][cur_option] = {}
+                    self.cmd_dict[cmdkey]['options'][cur_option]['helpstr'] = \
+                        mobj.group(2) + "\n"
+                else:
+                    self.cmd_dict[cmdkey][cur_option] = {}
+                    self.cmd_dict[cmdkey][cur_option]['helpstr'] = \
+                        mobj.group(2) + "\n"
 
-        print self.cmd_dict
 
     def get_command_tree(self, cmdlist):
 
@@ -107,5 +129,4 @@ class VaultCommandHelper(object):
         cmdkey = self.get_commandkey_from_cmdlist(cmdlist)
         output = self.execute_vault_commands(cmdlist)
         self.parse_vault_command_output(output, cmdkey)
-
-        print "output: ", output
+        return self.cmd_dict
