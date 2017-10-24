@@ -36,6 +36,10 @@ class VaultCompleter(Completer):
             if option.startswith(last_cmd):
                 matches.append(option)
 
+        for cmdoption in cmdlist[1:-1]:
+            if cmdoption in matches:
+                matches.remove(cmdoption)
+
         return matches
 
 
