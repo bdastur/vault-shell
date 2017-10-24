@@ -12,10 +12,9 @@ class VaultCompleter(Completer):
 
     def parse_document(self, document):
         cmdlist = document.text.split(" ")
-
-        for cmd in cmdlist:
-            if cmd == "" or cmd == " ":
-                cmdlist.remove(cmd)
+        # for cmd in cmdlist:
+        #     if cmd == "" or cmd == " ":
+        #         cmdlist.remove(cmd)
 
         return cmdlist
 
@@ -23,16 +22,19 @@ class VaultCompleter(Completer):
         """
         Get the options for the current comamnd
         """
-        matches = []
-
-        if len(cmdlist) <= 1:
-            return ["vault"]
-
-        print "Get command object, cmdlist:  ", cmdlist
         cmdobj = self.vault_commandhandler.get_command_tree(cmdlist)
-        print "cmdobj: ", cmdobj
-        if cmdobj is None:
-            return []
+        if 'options' in cmdobj.keys():
+            options = cmdobj['options']
+        else:
+            options = cmdobj.keys()
+
+        # Before we return the list of options, filter them based on
+        # what is already processed.
+        matches = []
+        last_cmd = cmdlist[-2]
+        for option in options:
+            if option.startswith(last_cmd):
+                matches.append(option)
 
         return matches
 

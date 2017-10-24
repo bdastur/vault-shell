@@ -11,7 +11,6 @@ class VaultCommandHelper(object):
         self.cmd_dict = {}
 
     def execute_vault_commands(self, vault_cmdlist):
-        print "vault cmd: ", vault_cmdlist
 
         try:
             sproc = subprocess.Popen(vault_cmdlist,
@@ -46,6 +45,7 @@ class VaultCommandHelper(object):
         commands and arguments
         '''
         if not cmdlist:
+            print "cmdlist: ", cmdlist
             return "vault"
 
         cmdkey = "vault"
@@ -64,7 +64,6 @@ class VaultCommandHelper(object):
         cmd_type = 'subcmds'
         for line in cmdoutput.splitlines():
             if not line:
-                print "continue"
                 continue
 
             # print "Line: ", line
@@ -120,13 +119,7 @@ class VaultCommandHelper(object):
 
 
     def get_command_tree(self, cmdlist):
-
-        # When cmdlist is None, it means we are executing  the command
-        # from top
-        if cmdlist == None:
-            cmdlist = ["vault"]
-
         cmdkey = self.get_commandkey_from_cmdlist(cmdlist)
-        output = self.execute_vault_commands(cmdlist)
+        output = self.get_vault_help_options(cmdlist)
         self.parse_vault_command_output(output, cmdkey)
-        return self.cmd_dict
+        return self.cmd_dict[cmdkey]
