@@ -3,12 +3,14 @@
 
 from __future__ import unicode_literals
 from prompt_toolkit.completion import Completer, Completion
+import six
 
 
 class VaultCompleter(Completer):
-    def __init__(self, vault_commandhandler, resource):
+    def __init__(self, vault_commandhandler, resource, helper_buffer):
         self.vault_commandhandler = vault_commandhandler
         self.resource = resource
+        self.helper_buffer = helper_buffer
 
     def parse_document(self, document):
         cmdlist = document.text.split(" ")
@@ -22,11 +24,15 @@ class VaultCompleter(Completer):
         """
         Get the options for the current comamnd
         """
+        help_string = "Helpstr..."
         cmdobj = self.vault_commandhandler.get_command_tree(cmdlist)
         if 'options' in cmdobj.keys():
+            help_string = cmdobj['usage']
+            help_string = six.text_type(help_string)
             options = cmdobj['options']
         else:
             options = cmdobj.keys()
+
 
         # Before we return the list of options, filter them based on
         # what is already processed.
@@ -40,7 +46,7 @@ class VaultCompleter(Completer):
             if cmdoption in matches:
                 matches.remove(cmdoption)
 
-        return matches
+        return (matches, help_string)
 
 
     def get_completions(self, document, complete_event):
@@ -49,7 +55,10 @@ class VaultCompleter(Completer):
         return an iterator
         """
         cmdlist = self.parse_document(document)
-        completion_options = self.get_current_command_options(cmdlist)
+
+        (completion_options, help_string) = \
+            self.get_current_command_options(cmdlist)
+        self.helper_buffer.text = help_string
 
         for option in completion_options:
             yield Completion(option, start_position=0)

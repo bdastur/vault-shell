@@ -26,9 +26,18 @@ class VaultBuffer(object):
         history = InMemoryHistory()
         vault_commandhandler = VaultCommandHelper()
         resource = Resource()
-        vault_completer = VaultCompleter(vault_commandhandler, resource)
 
-        self.main_buffer = Buffer(completer=vault_completer,
+        self.helper_buffer = Buffer(is_multiline=True,
+                                    complete_while_typing=True,
+                                    enable_history_search=False,
+                                    initial_document=None,
+                                    accept_action=AcceptAction.IGNORE)
+
+        self.vault_completer = VaultCompleter(vault_commandhandler,
+                                              resource,
+                                              self.helper_buffer)
+
+        self.main_buffer = Buffer(completer=self.vault_completer,
                                   auto_suggest=AutoSuggestFromHistory(),
                                   history=history,
                                   validator=None,
@@ -37,10 +46,9 @@ class VaultBuffer(object):
                                   initial_document=None,
                                   accept_action=AcceptAction.RETURN_DOCUMENT)
 
-        self.helper_buffer = Buffer(is_multiline=True)
         self.helper_buffer.text = "Vault Help"
 
-        #vault_completer.help_buffer = self.helper_buffer
+        self.vault_completer.help_buffer = self.helper_buffer
 
         self.buffers = {
             DEFAULT_BUFFER: self.main_buffer,
@@ -52,8 +60,8 @@ class VaultBuffer(object):
 class VaultLayout(object):
     def __init__(self,
                  message="vault> ",
-                 menu_height=12,
-                 multiwindow=False):
+                 menu_height=16,
+                 multiwindow=True):
         toolbar = Toolbar()
         main_layout = create_prompt_layout(
              message=message,
@@ -66,7 +74,7 @@ class VaultLayout(object):
                 main_layout,
                 Window(width=D.exact(1),
                        content=FillControl('|', token=Token.Line)),
-                Window(width=D.exact(70),
+                Window(width=D.exact(90),
                        wrap_lines=True,
                        content=BufferControl(buffer_name='HELP')),
             ])
