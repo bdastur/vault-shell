@@ -20,10 +20,13 @@ VaultKeyBinder = KeyBindingManager(enable_search=True,
                                    enable_abort_and_exit_bindings=True,
                                    enable_system_bindings=True,
                                    enable_auto_suggest_bindings=True)
+manager = KeyBindingManager.for_prompt()
 
-@VaultKeyBinder.registry.add_binding(Keys.ControlQ)
+@manager.registry.add_binding(Keys.ControlQ)
 def _controlQKey(event):
-    pass
+    def print_hello():
+        print "Key pressed"
+    event.cli.run_in_terminal(print_hello)
 
 
 def run():
@@ -35,7 +38,8 @@ def run():
         layout=vault_layout.layout,
         buffers=cli_buffer.buffers,
         on_exit=AbortAction.RAISE_EXCEPTION,
-        key_bindings_registry=VaultKeyBinder.registry)
+        key_bindings_registry=VaultKeyBinder.registry,
+        use_alternate_screen=False)
 
     cli = CommandLineInterface(application=application,
                                eventloop=create_eventloop())
