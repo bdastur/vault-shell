@@ -64,10 +64,11 @@ def process_document(document):
     if len(document.text) == 0:
         return
 
-    print "Document: ", document.text
     cmdlist = document.text.split(" ")
     vault_cmdhelper = VaultCommandHelper()
-
+    cmdlist.insert(0, 'vault')
+    output = vault_cmdhelper.execute_vault_commands(cmdlist)
+    print output
 
 if __name__ == '__main__':
     run()

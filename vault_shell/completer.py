@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 from prompt_toolkit.completion import Completer, Completion
 import six
+import re
 
 
 class VaultCompleter(Completer):
@@ -37,17 +38,20 @@ class VaultCompleter(Completer):
         # Before we return the list of options, filter them based on
         # what is already processed.
         matches = []
+        matches_prefix = []
         last_cmd = cmdlist[-2]
         for option in options:
             if option.startswith(last_cmd):
                 matches.append(option)
+                matches_prefix.append(option.split("=")[0])
 
-        for cmdoption in cmdlist[1:-1]:
-            if cmdoption in matches:
-                matches.remove(cmdoption)
+        for cmdoption in cmdlist[1:-2]:
+            if cmdoption.split("=")[0] in matches_prefix:
+                remove_idx = matches_prefix.index(cmdoption.split("=")[0])
+                remove_obj = matches[remove_idx]
+                matches.remove(remove_obj)
 
         return (matches, help_string)
-
 
     def get_completions(self, document, complete_event):
         """
