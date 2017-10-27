@@ -60,7 +60,7 @@ class VaultBuffer(object):
 class VaultLayout(object):
     def __init__(self,
                  message="vault> ",
-                 menu_height=16,
+                 menu_height=19,
                  multiwindow=True):
         toolbar = Toolbar()
         main_layout = create_prompt_layout(
